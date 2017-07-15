@@ -2,12 +2,21 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class Person {
-	private String name;
+	private String name = "";
+	private String position = "";
 	private double currentScore = 0;
 	private double totalScore = 0;
-	//private double percent = 0;
+	private double percent = 0;
 	private String record = "";
 	private String groupName = "";
+	
+	//get and set Position
+	public void setPosition(String s) {
+		position = s;
+	}
+	public String getPosition() {
+		return position;
+	}
 	
 	//get name and set name
 	public void setName(String s) {
@@ -21,24 +30,29 @@ public class Person {
 	public void setCurrent(double num) {
 		currentScore = num;
 	}
-	public double getCurrent() {
-		return currentScore;
+	public void updateCurrent(double num) {
+		currentScore += num;
+	}
+	public String getCurrent() {
+		return Double.toString(currentScore);
 	}
 	public void setTotal(double num) {
 		totalScore = num;
 	}
-	public double getTotal() {
-		return totalScore;
+	public void updateTotal(double num) {
+		totalScore += num;
+	}
+	public String getTotal() {
+		return Double.toString(totalScore);
 	}
 	
 	//get record and set record
-	public void updateRecord(double num, String s) {
-		currentScore += num;
+	public void updateRecord(String s) {
+		//currentScore += num;
 		LocalDate localDate = LocalDate.now();
 		String currentDate = DateTimeFormatter.ofPattern("yyyy/MM/dd").format(localDate);
-		record += currentDate + "\n得分：" + num + "\n原因：" + s + "\n当前总得分：" + getCurrent()
+		record += currentDate + "\n得分：" + currentScore + "\n原因：" + s + "\n当前总得分：" + getCurrent()
 		+ ", " + getPercent() + "%\n\n";
-		
 	}
 	public String getRecord() {
 		return record;
@@ -53,8 +67,8 @@ public class Person {
 	}
 	
 	//get percent
-	public double getPercent() {
-		return 100*currentScore/totalScore;
+	public String getPercent() {
+		return Double.toString(100*currentScore/totalScore);
 	}
 	
 	
