@@ -35,9 +35,10 @@
      
     <HBox spacing="10" alignment="bottom_right" GridPane.columnIndex="0"
      	GridPane.rowIndex="4">
-     	<Button text="Add" onAction="#addPerson"/>
-        <Button text="Delete" onAction="#deletePerson"/>
-        <Button text="Edit" onAction="#editPerson"/>
+     	<Button fx:id = "addButton" text="Add" onAction="#addPerson"/>
+        <Button fx:id = "deleteButton" text="Delete" onAction="#deletePerson"/>
+        <Button fx:id = "editButton" text="Edit" onAction="#editPerson"/>
+        <Button fx:id = "recordButton" text="查看详细记录" onAction="#lookupRecord"/>
      	
     </HBox>
     

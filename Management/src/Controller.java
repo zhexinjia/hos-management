@@ -25,6 +25,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -37,6 +39,11 @@ public class Controller implements Initializable {
 	@FXML private TextField searchField;
 	@FXML private HBox bar;
 	
+	@FXML private Button addButton;
+	@FXML private Button editButton;
+	@FXML private Button deleteButton;
+	@FXML private Button recordButton;
+	
 	private static String currentFilePath = null;
 	
 	private ArrayList<TextField> textFieldsCopy;
@@ -46,6 +53,12 @@ public class Controller implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		reload();	
+		ArrayList<Button> buttons = new ArrayList<Button>();
+		buttons.add(addButton);
+		buttons.add(editButton);
+		buttons.add(deleteButton);
+		buttons.add(recordButton);
+		setButtonShadow(buttons);
 		System.out.println("init done");
 	}
 	
@@ -61,6 +74,10 @@ public class Controller implements Initializable {
 	
 	public Table getTable() {
 		return table;
+	}
+	
+	protected boolean getChangeStatus() {
+		return table.hasChanged;
 	}
 	
 	
@@ -91,6 +108,7 @@ public class Controller implements Initializable {
 			TextField t = new TextField();			
 			t.setPromptText(table.fields.get(i));
 			textFields.add(t);
+			textFieldsCopy = new ArrayList<TextField>(textFields);
 		}
 		tableview.getColumns().setAll(cols);
 		bar.getChildren().setAll(textFields);
@@ -127,7 +145,6 @@ public class Controller implements Initializable {
    	 	tableview.setItems(arr);
    	 	// Resize columns to fit screen
    	    tableview.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-   	    System.out.println("reload done");
 	}
 	
 	
@@ -212,7 +229,11 @@ public class Controller implements Initializable {
     			for (int i = 0; i < table.fields.size(); i++) {
     				TextField t = new TextField();
     				t.setPromptText(table.fields.get(i));
-    				t.setText(values.get(i));
+    				try {
+    					t.setText(values.get(i));
+    				}catch(Exception e) {
+    					
+    				}
     				textFields.add(t);
     			}
     			box.getChildren().addAll(textFields);
@@ -249,14 +270,33 @@ public class Controller implements Initializable {
 					editStage.close();					
 				}
     		});
-    		
-    		box.getChildren().addAll(saveButton, cancelButton);
+    		HBox buttonBox = new HBox();
+    		buttonBox.setSpacing(40);
+    		buttonBox.getChildren().addAll(saveButton, cancelButton);
+    		box.getChildren().add(buttonBox);
+    		//box.getChildren().addAll(saveButton, cancelButton);
     		Scene editScene = new Scene(box);
     		editStage.setScene(editScene);
-    		editStage.show();
+    		if (selectedPerson != null) {
+    			editStage.show();
+    		}
+    		//editStage.show();
     }
       
+    @FXML
+    protected void lookupRecord(ActionEvent event) {
+    		errorMessage("1","2","3");
+    }
+    
     public boolean popUpAlert() {
+    		if (!entryCheck()) {
+    			errorMessage("出错","名字不能为空","姓名不能为空");
+    			return true;
+    		}
+    		if (!scoreValidation()) {
+    			errorMessage("出错","得分必须为数字","得分必须为数字");
+    			return true;
+    		}
     		return false;
     }
     
@@ -337,10 +377,7 @@ public class Controller implements Initializable {
 				try {
 					table = new Table();
 					reload();
-					//Runtime.getRuntime().exec("java -jar addressBook.jar");
-					System.out.println("open");
 				}catch(Exception e) {
-					System.out.println("无法新建");
 				}
 			}
 		};
@@ -351,23 +388,7 @@ public class Controller implements Initializable {
 		return new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				final Stage stage = new Stage();
-				FileChooser fileChooser = new FileChooser();
-				fileChooser.setTitle("打开");
-				File file = fileChooser.showOpenDialog(stage);
-				if (file != null) {
-					try {
-						System.out.println(file.getAbsolutePath());
-						table = new Table();
-						table.readFile(file.getAbsolutePath());
-						System.out.println("read file");
-						reload();
-						System.out.println("reloaded");
-					} catch (FileNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
+				openFileChooser("打开");
 			}
 			
 		};
@@ -386,7 +407,7 @@ public class Controller implements Initializable {
 				}	
     		};
     }
-    //另存为    
+    //另存为
     protected EventHandler<ActionEvent> saveAs() {
     		return new EventHandler<ActionEvent>() {
 				@Override
@@ -396,7 +417,8 @@ public class Controller implements Initializable {
     		};
     }
     
-    private void openFileChooser(String task) {
+    //打开一个文档选择器，用在saveAs()和open()中
+    protected boolean openFileChooser(String task) {
     		final Stage stage = new Stage();
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle(task);
@@ -406,6 +428,7 @@ public class Controller implements Initializable {
 				try {
 					table.saveAs(file.getAbsolutePath());
 					currentFilePath = file.getAbsolutePath();
+					return true;
 				}catch(Exception e) {
 				}
 			}
@@ -417,11 +440,64 @@ public class Controller implements Initializable {
 					table.readFile(file.getAbsolutePath());
 					currentFilePath = file.getAbsolutePath();
 					reload();
-				}catch(Exception e) {			
+					return true;
+				}catch(Exception e) {	
 				}
 			}
 		}
+		return false;
     }
+    
+    //出错弹出窗口
+    protected void errorMessage(String title, String text, String content) {
+    		Alert alert = new Alert(AlertType.ERROR);
+    		alert.setTitle(title);
+    		alert.setHeaderText(text);
+    		alert.setContentText(content);
+    		alert.showAndWait();
+    }
+    
+    //检查得分和总分是否为数字
+    protected boolean scoreValidation() {
+    		if (!textFieldsCopy.get(2).getText().trim().isEmpty()) {
+    			try {
+    				Double.parseDouble(textFieldsCopy.get(2).getText());
+    			}catch(Exception e) {
+    				return false;
+    			}
+    		}
+    		if (!textFieldsCopy.get(3).getText().trim().isEmpty()) {
+    			try {
+    				Double.parseDouble(textFieldsCopy.get(3).getText());
+    			}catch(Exception e) {
+    				return false;
+    			}
+    		}
+    		return true;
+    }
+    
+    protected boolean entryCheck() {
+    		if (textFieldsCopy.get(1).getText().trim().isEmpty()) {
+    			return false;
+    		}
+    		return true;
+    }
+    
+    //Button effect
+    public void setButtonShadow(ArrayList<Button> buttons) {
+    		DropShadow shadow = new DropShadow();
+    		for (int i = 0; i < buttons.size(); i++) {
+    			final int index = i;
+    			buttons.get(i).addEventHandler(MouseEvent.MOUSE_ENTERED, (MouseEvent e)->{
+    				buttons.get(index).setEffect(shadow);
+    			});
+    			buttons.get(i).addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent e)->{
+    				buttons.get(index).setEffect(null);
+    			});
+    		}
+    	
+    }
+    
     
     
 }

@@ -40,19 +40,24 @@ public class Table {
 	
 	public void add(Person p) {
 		staffs.add(p);
+		hasChanged = true;
 	}
 	public void delete(Person p) {
 		staffs.remove(p);
+		hasChanged = true;
 	}
 	public void delete(int i) {
 		staffs.remove(i);
+		hasChanged = true;
 	}
 	public void edit(int i, Person p) {
 		staffs.set(i, p);
+		hasChanged = true;
 	}
 	
 	public void replace(int i, Person p) {
 		staffs.set(i, p);
+		hasChanged = true;
 	}
 	
 	//saveAs file
@@ -84,6 +89,7 @@ public class Table {
 		**/
 		tsvWriter.close();
 		filePath = newPath;
+		hasChanged = false;
 		return true;
 	}
 	
@@ -111,6 +117,7 @@ public class Table {
    			System.out.println("after add P");
    			staffs.add(p);
    		}
+   		hasChanged = false;
 	}
 	
 	public ArrayList<Person> getCurrentStaff(String pos){

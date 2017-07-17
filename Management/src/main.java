@@ -64,6 +64,10 @@ public class main extends Application {
 	        		    
 	    primaryStage.setTitle("南阳卫校");
 	    primaryStage.setScene(scene);
+	    primaryStage.setOnCloseRequest(e->{
+	    	e.consume();
+	    	closeProgram();
+	    });
 	    primaryStage.show();
 	    
 	    //MenuBar
@@ -87,8 +91,56 @@ public class main extends Application {
 	    MenuItem newMenuItem = new MenuItem("New");
 	    newMenuItem.setOnAction(myc.newCallback());
 	    MenuItem closeItem = new MenuItem("Close");
+	    closeItem.setOnAction(closeButtonClicked());
 	    menuFile.getItems().addAll(newMenuItem, openMenuItem, saveMenuItem, saveAsMenuItem, closeItem);
 	    //结束文件目录
-	   
-	 }
+	}
+	
+	public EventHandler<ActionEvent> closeButtonClicked() {
+		return new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				closeProgram();
+			}
+		};
+		
+	}
+	//关闭程序前询问是否储存
+	public void closeProgram() {
+		if (myc.getChangeStatus()) {
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.setTitle("确认退出");
+			alert.setHeaderText("信息未保存");
+			alert.setContentText("直接退出还是存储");
+			
+			ButtonType saveButton = new ButtonType("退出并保存");
+			ButtonType quitButton = new ButtonType("直接退出");
+			ButtonType cancelButton = new ButtonType("取消");
+			
+			alert.getButtonTypes().setAll(saveButton, quitButton, cancelButton);
+			Optional<ButtonType> result = alert.showAndWait();
+			if (result.get() == saveButton) {
+				if (myc.getTable().filePath != null) {
+					try {
+						myc.getTable().save();
+						stage.close();
+					}catch(Exception e) {
+						myc.errorMessage("出错", "找不到文件路径", "请确认文件路径正确或尝试另存为");
+					}
+				}else {
+					if (myc.openFileChooser("另存为")) {
+						stage.close();
+					}
+				}
+			}else if(result.get() == quitButton) {
+				stage.close();
+			}
+		}else {
+			stage.close();
+		}
+		
+	}
+    	
+	
+	
 }
