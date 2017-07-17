@@ -1,7 +1,11 @@
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Person {
+	
+	/**
 	private String name = "";
 	private String position = "";
 	private double currentScore = 0;
@@ -9,41 +13,76 @@ public class Person {
 	private double percent = 0;
 	private String record = "";
 	private String groupName = "";
+	**/
+	
+	//position[0], name[1], currentScore[2], totalScore[3], percent[4], record[5]
+	
+	ArrayList<String> vals;
+	
+	public Person() {
+		this.vals = new ArrayList<String>();
+	}
+	public Person(Iterator<String> iter) {
+		this.vals = new ArrayList<String>();
+		while (iter.hasNext()) {
+			this.vals.add(iter.next());
+		}
+		updatePercent();
+	}
+	public Person(String[] fields) {
+		this.vals = new ArrayList<String>();
+		for (int i = 0; i < fields.length; i++) {
+			vals.add(fields[i]);
+		}
+		updatePercent();
+	}
 	
 	//get and set Position
 	public void setPosition(String s) {
-		position = s;
+		this.vals.set(0, s);
 	}
 	public String getPosition() {
-		return position;
+		return this.vals.get(0);
 	}
 	
 	//get name and set name
 	public void setName(String s) {
-		name = s;
+		this.vals.set(1, s);
 	}
 	public String getName() {
-		return name;
+		return this.vals.get(1);
 	}
 	
-	//get scores and set scores
-	public void setCurrent(double num) {
-		currentScore = num;
+	//get, update, set currentScore
+	public void setCurrent(String num) {
+		this.vals.set(2, num);
+		updatePercent();
 	}
-	public void updateCurrent(double num) {
-		currentScore += num;
+	public void updateCurrent(String num) {
+		Double current = Double.parseDouble(this.vals.get(2));
+		Double updateNum = Double.parseDouble(num);
+		Double result = current += updateNum;
+		this.vals.set(2, Double.toString(result));
+		updatePercent();
 	}
 	public String getCurrent() {
-		return Double.toString(currentScore);
+		return this.vals.get(2);
 	}
-	public void setTotal(double num) {
-		totalScore = num;
+	
+	//set, update, get totalScore
+	public void setTotal(String num) {
+		this.vals.set(3, num);
+		updatePercent();
 	}
-	public void updateTotal(double num) {
-		totalScore += num;
+	public void updateTotal(String num) {
+		Double total = Double.parseDouble(this.vals.get(3));
+		Double updateNum = Double.parseDouble(num);
+		Double result = total += updateNum;
+		this.vals.set(3, Double.toString(result));
+		updatePercent();
 	}
 	public String getTotal() {
-		return Double.toString(totalScore);
+		return this.vals.get(3);
 	}
 	
 	//get record and set record
@@ -51,24 +90,43 @@ public class Person {
 		//currentScore += num;
 		LocalDate localDate = LocalDate.now();
 		String currentDate = DateTimeFormatter.ofPattern("yyyy/MM/dd").format(localDate);
-		record += currentDate + "\n得分：" + currentScore + "\n原因：" + s + "\n当前总得分：" + getCurrent()
+		String record = this.vals.get(5) + currentDate + "\n得分：" + getCurrent() + "\n原因：" + s + "\n当前总得分：" + getTotal()
 		+ ", " + getPercent() + "%\n\n";
 	}
 	public String getRecord() {
-		return record;
+		return this.vals.get(5);
 	}
 	
-	//get and set groupName
-	public void setGroupName(String s) {
-		groupName = s;
-	}
-	public String getGroupName() {
-		return groupName;
-	}
 	
 	//get percent
 	public String getPercent() {
-		return Double.toString(100*currentScore/totalScore);
+		return this.vals.get(4);
+	}
+	
+	public void updatePercent() {
+		try {
+			Double current = Double.parseDouble(this.vals.get(2));
+			Double total = Double.parseDouble(this.vals.get(3));
+			Double result = 100*current/total;
+			this.vals.set(4, Double.toString(result)+"%");
+		}catch(Exception e) {
+			
+		}
+		
+	}
+	
+	//get ArrayList
+	public ArrayList<String> getArrayList(){
+		return this.vals;
+	}
+	
+	//getArray
+	public String[] getFormattedArray() {
+		String[] temp = new String[this.vals.size()];
+		for (int i = 0; i < this.vals.size(); i++) {
+			temp[i] = this.vals.get(i);
+		}
+		return temp;
 	}
 	
 	

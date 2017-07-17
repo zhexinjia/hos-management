@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
 import com.univocity.parsers.tsv.TsvParser;
 import com.univocity.parsers.tsv.TsvParserSettings;
 import com.univocity.parsers.tsv.TsvWriter;
@@ -49,25 +51,30 @@ public class Table {
 		staffs.set(i, p);
 	}
 	
+	public void replace(int i, Person p) {
+		staffs.set(i, p);
+	}
+	
 	//saveAs file
 	public boolean saveAs(String newPath) throws UnsupportedEncodingException, FileNotFoundException {
 		Writer writer = new BufferedWriter(
 				new OutputStreamWriter(
 						new FileOutputStream(newPath), "UTF-8"));
-		TsvWriter tsvWriter = new TsvWriter(writer, new TsvWriterSettings());
+		CsvWriter tsvWriter = new CsvWriter(writer, new CsvWriterSettings());
 		
-		String[] content = {"123","张三","80","100","80.0%"};
-		tsvWriter.writeHeaders(DEFAULT_FIELDS);
-		tsvWriter.writeRow(content);
-   
+		//String[] content = {"123","张三","80","100","80.0%"};
+		//tsvWriter.writeHeaders(DEFAULT_FIELDS);
+		//tsvWriter.writeRow(content);
 		
 		Iterator<Person> Staffs = this.staffs.iterator();
+		
 		while(Staffs.hasNext()) {
 			//System.out.println(Staffs.next().getName());
-			Person aaa = Staffs.next();
-			String[] temp = {aaa.getPosition(), aaa.getName(), aaa.getCurrent(), aaa.getTotal(), aaa.getPercent(), aaa.getRecord()};
+			//Person aaa = Staffs.next();
+			//String[] temp = {aaa.getPosition(), aaa.getName(), aaa.getCurrent(), aaa.getTotal(), aaa.getPercent(), aaa.getRecord()};
 			//System.out.println(temp.length);
-			tsvWriter.writeRow(temp);
+			Person p = Staffs.next();
+			tsvWriter.writeRow(p.getFormattedArray());
 		}
 		/**
 		for (int i = 0; i < staffs.size(); i++) {
@@ -86,30 +93,24 @@ public class Table {
 		return true;
 	}
 	
+	//读指定文件
+	//FIXME:每行必须有6个值，不然无法读取
 	public void readFile(String path) throws FileNotFoundException {
 		Reader in = new FileReader(path);
+		filePath = path;
 		TsvParserSettings settings = new TsvParserSettings();
    		settings.getFormat().setLineSeparator("\n");
    		TsvParser parser = new TsvParser(settings);
    		List<String[]> allRows = parser.parseAll(in);
-   		//System.out.println(allRows.get(0)[0]);
-   		//System.out.println(allRows.get(1)[0]);
-   		fields = new ArrayList<String>(Arrays.asList(allRows.remove(0)));
+   		
    		while (allRows.size() > 0) {
    			String[] temp = allRows.remove(0);
-   			Person p = new Person();
-   			p.setPosition(temp[0]);
-   			p.setName(temp[1]);
-   			p.setCurrent(Double.parseDouble(temp[2]));
-   			p.setTotal(Double.parseDouble(temp[3]));
-   			
-   			
-   			//System.out.println(allRows.remove(0)[1]);
+   			System.out.println("before add P");
+   			Person p = new Person(temp[0].split(",|，"));
+   			System.out.println("list大小：" + p.getArrayList().size());
+   			System.out.println("after add P");
+   			staffs.add(p);
    		}
-   		
-   		//String[] temp = allRows.remove(0)[0].split(",");
-   		//List<String> temp = Arrays.asList(allRows.remove(0));
-   		//System.out.println(temp.length);
 	}
 	
 	public ArrayList<Person> getCurrentStaff(String pos){
@@ -119,6 +120,7 @@ public class Table {
 				temp.add(staffs.get(i));
 			}
 		}
+		currentStaffs = temp;
 		return temp;
 	}
 	
